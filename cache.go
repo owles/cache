@@ -14,6 +14,3 @@ type Cache interface {
 	Forget(key string) bool
 	Flush() bool
 }
-
-// ToDo - [-] Add cast to value ...
-// ToDo - [-] Add memory cache ...

@@ -2,7 +2,7 @@
 
 Helpers for redis and memory (not memcache) cache.
 
-## Install and usage
+### Install and usage
 
 ```
 go get github.com/owles/cache
