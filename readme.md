@@ -13,7 +13,8 @@ func main() {
     redisCache, err := cache.NewRedisCache(
         context.Background(),
         "localhost:6379",
-        "",
+        "user",
+        "pass",
         0,
     )
 

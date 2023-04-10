@@ -12,9 +12,10 @@ type Redis struct {
 	ctx    context.Context
 }
 
-func NewRedisCache(ctx context.Context, addr, pass string, db int) (*Redis, error) {
+func NewRedisCache(ctx context.Context, addr, user, pass string, db int) (*Redis, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
+		Username: user,
 		Password: pass,
 		DB:       db,
 	})
