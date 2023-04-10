@@ -6,14 +6,7 @@ import (
 	"reflect"
 	"sync"
 	"time"
-)
-
-const (
-	SizeNone = iota
-	SizeKB   = 1 << (10 * iota)
-	SizeMB
-	SizeGB
-	SizeTB
+	"unsafe"
 )
 
 type memNode struct {
@@ -30,6 +23,8 @@ type Memory struct {
 	memAlloc int64
 	memAllow int64
 }
+
+const memNodeSize = int64(unsafe.Sizeof(memNode{}))
 
 func sizeOf(v reflect.Value) int64 {
 	size := int64(0)
@@ -112,7 +107,7 @@ func (c *Memory) remove(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.memAlloc += c.table[key].Size()
+	c.memAlloc -= c.table[key].Size()
 	delete(c.table, key)
 }
 
@@ -122,7 +117,7 @@ func (c *Memory) garbageCollect(flush bool) {
 
 	for key, node := range c.table {
 		if node.IsExpired() || flush {
-			c.memAlloc += c.table[key].Size()
+			c.memAlloc -= c.table[key].Size()
 			delete(c.table, key)
 		}
 	}
@@ -150,9 +145,16 @@ func (c *Memory) Set(key string, val any, t time.Duration) error {
 		expireAt = time.Now().Add(t).UnixMicro()
 	}
 
-	size := sizeOf(reflect.ValueOf(val))
-	if c.memAllow != 0 && c.memAlloc+size > c.memAllow {
-		return errors.New("memory limit")
+	var size int64 = 0
+	if c.memAllow > 0 {
+		size = sizeOf(reflect.ValueOf(key)) + sizeOf(reflect.ValueOf(val)) + memNodeSize
+		if c.memAlloc+size > c.memAllow {
+			return errors.New("memory limit")
+		}
+
+		if _, ok := c.table[key]; ok {
+			c.memAlloc -= c.table[key].Size()
+		}
 	}
 
 	c.table[key] = &memNode{

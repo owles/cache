@@ -4,6 +4,14 @@ import (
 	"time"
 )
 
+const (
+	SizeNone = iota
+	SizeKB   = 1 << (10 * iota)
+	SizeMB
+	SizeGB
+	SizeTB
+)
+
 type Cache interface {
 	Name() string
 	Size() int64

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var cache = NewMemoryCache(context.Background(), 0)
+var cache = NewMemoryCache(context.Background(), SizeMB*50)
 
 func TestMemoryGet(t *testing.T) {
 	cache.Set("foo", "bar", 0)
@@ -42,5 +42,13 @@ func TestMemoryTimeUnlimited(t *testing.T) {
 
 	if cache.Get("foo.bar") != "baz" {
 		t.Error("Cache get life time failed: foo.bar -> baz")
+	}
+}
+
+func TestMemorySize(t *testing.T) {
+	cache.Set("foo.bar", "value", 0)
+	cache.Flush()
+	if cache.Size() != 0 {
+		t.Error("Cache flush failed: size > 0")
 	}
 }
